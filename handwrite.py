@@ -1,11 +1,14 @@
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 
 def main():
     print('rap')
     label_data = read_label_data()
     picture_data = read_picture_data()
     print('blaf', picture_data)
+    plt.scatter(5, 5, marker='s')
+    plt.show
 
 def read_picture_data():
     file_name = os.path.join('.', 'datas', 'train-images.idx3-ubyte')
