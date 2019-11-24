@@ -4,39 +4,39 @@ import numpy as np
 import pygame
 
 def main():
+    print('Reading labels')
     label_data = read_label_data()
-    print('Labels read')
 
+    print('Reading images')
     picture_data = read_picture_data()
-    print('Image read')
 
     plot_stuff(picture_data, label_data)
 
 def plot_stuff(picture_data, label_data):
-    width, height = 28, 28
+    width, height = 28, 28  # Size of pixel when drawing numbers
     black = (0, 0, 0)
     pygame.init()
     screen = pygame.display.set_mode((700, 700))
-    myfont = pygame.font.SysFont("monospace", 45)
+    myfont = pygame.font.SysFont("monospace", 85)
 
-
-
-    n = 0
     colour_data = picture_data[0: 784]
 
-
-    #print(colour_data, '\n', colour_data[[5]], '\n', colour_data[5][5])
+    n = 0
     while n < 784*20:
-        #colour_data = picture_data[0: n + 784]
-        screen.fill(black)
+        screen.fill(black)  # Clear screen
+
+        # Plot current number
         for y in range(0, 280, 10):
             for x in range(0, 280, 10):
                 r = g = b = int(colour_data[int(n/784)][int(x/10) + int(28*y/10)])
                 pygame.draw.rect(screen, (r, g, b), (x + 50, y + 50, 10, 10), 0)
+
+        # Print target value for current number
         label = myfont.render(str(label_data[int(n/784)]), 1, (255,255,0))
-        screen.blit(label, (400, 100))
+        screen.blit(label, (400, 170))
+
         pygame.display.update()
-        time.sleep(.5)
+        time.sleep(.05)
 
         n += 784
 
