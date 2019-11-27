@@ -3,12 +3,18 @@ import time
 import numpy as np
 import pygame
 
+os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centers the Pygame window
 
 def plot_stuff(picture_data, label_data):
-    width, height = 10, 10  # Size of pixel when drawing numbers
+    width, height = 5, 5  # Size of pixel when drawing numbers
     black, yellow = (0, 0, 0), (255,255,0)
+
     pygame.init()
-    screen = pygame.display.set_mode((700, 700))
+
+    x, y = set_window_size()
+    screen = pygame.display.set_mode((x,y))
+
+
     myfont = pygame.font.SysFont("monospace", 85)
 
     colour_data = picture_data[0: 784]
@@ -23,16 +29,35 @@ def plot_stuff(picture_data, label_data):
                 r = g = b = int(colour_data[int(n/784)][int(x/width) +
                                 int(28*y/height)])
                 pygame.draw.rect(screen, (r, g, b),
-                                 (x + 50, y + 50, width, height), 0)
+                                 (x + 100, y + 5, width, height), 0)
 
         # Print target value for current number
         label = myfont.render(str(label_data[int(n/784)]), 1, yellow)
-        screen.blit(label, (400, 170))
+        screen.blit(label, (400, 50))
 
         pygame.display.update()
-        time.sleep(.05)
+        time.sleep(.5)
 
         n += 784
+
+
+def set_window_size():
+        infostuffs = pygame.display.Info() # gets monitor info
+
+        monitorx, monitory = infostuffs.current_w, infostuffs.current_h # puts monitor length and height into variables
+
+        dispx, dispy = 700, 700
+
+        if dispx > monitorx: # scales screen down if too long
+            dispy /= dispx / monitorx
+            dispx = monitorx
+        if dispy > monitory: # scales screen down if too tall
+            dispx /= dispy / monitory
+            dispy = monitory
+
+        x, y = int(dispx), int(dispy)
+
+        return x, y
 
 
 def read_picture_data(filename):
@@ -90,8 +115,10 @@ def read_label_data(filename):
 
 
 def main():
-    label_data = read_label_data('train-labels.idx1-ubyte')
-    picture_data = read_picture_data('train-images.idx3-ubyte')
+    # label_data = read_label_data('train-labels.idx1-ubyte')
+    # picture_data = read_picture_data('train-images.idx3-ubyte')
+    label_data = read_label_data('t10k-labels.idx1-ubyte')
+    picture_data = read_picture_data('t10k-images.idx3-ubyte')
     plot_stuff(picture_data, label_data)
 
 
