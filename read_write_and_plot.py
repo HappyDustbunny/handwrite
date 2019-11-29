@@ -5,40 +5,37 @@ import pygame
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centers the Pygame window
 
-def plot_stuff(picture_data, label_data):
-    width, height = 5, 5  # Size of pixel when drawing numbers
+def plot_stuff(single_label, single_picture):
+    width, height = 10, 10  # Size of pixel when drawing numbers
     black, yellow = (0, 0, 0), (255,255,0)
 
     pygame.init()
-
     x, y = set_window_size()
     screen = pygame.display.set_mode((x,y))
-
-
     myfont = pygame.font.SysFont("monospace", 85)
 
-    colour_data = picture_data[0: 784]
+    # colour_data = single_picture[0: 784]
 
-    n = 0
-    while n < 784*20:
-        screen.fill(black)  # Clear screen
+    # n = 0
+    # while n < 784*20:
+    screen.fill(black)  # Clear screen
 
-        # Plot current number
-        for y in range(0, 28*height, height):
-            for x in range(0, 28*width, width):
-                r = g = b = int(colour_data[int(n/784)][int(x/width) +
-                                int(28*y/height)])
-                pygame.draw.rect(screen, (r, g, b),
-                                 (x + 100, y + 5, width, height), 0)
+    # Plot current number
+    for index, byte in enumerate(single_picture):
+        r = g = b = int(byte)
+        x = 5*(index%28 + 20)
+        y = 5*(int(index/28)%28 + 5)
+        
+        pygame.draw.rect(screen, (r, g, b), (x, y, width, height))
 
-        # Print target value for current number
-        label = myfont.render(str(label_data[int(n/784)]), 1, yellow)
-        screen.blit(label, (400, 50))
+    # Print target value for current number
+    label = myfont.render(str(single_label), 1, yellow)
+    screen.blit(label, (400, 50))
 
-        pygame.display.update()
-        time.sleep(.5)
+    pygame.display.update()
+    time.sleep(.5)
 
-        n += 784
+    # n += 784
 
 
 def set_window_size():
@@ -66,16 +63,19 @@ def read_picture_data(filename):
     """
     file_name = os.path.join('.', 'datas', filename)
 
-    with open(file_name, 'rb') as file:
-        read_data = file.read()
+    try:
+        with open(file_name, 'rb') as file:
+            read_data = file.read()
+    except FileNotFoundError:
+        print(f'Oups, the file {filename} was not found')
 
     try:
         if filename == 'train-images.idx3-ubyte':
             number_of_pics = 60000
         else:
             number_of_pics = 10000
-    except FileNotFoundError:
-        print(f'Oups, the file {filename} was not found')
+    except LookupError:
+        print(f'Oups, the file {filename} was not named as a MNist file')
 
     picture_data = np.zeros((number_of_pics, 28*28))  # 28*28 = 784
 
