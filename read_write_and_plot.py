@@ -25,7 +25,7 @@ def plot_stuff(single_label, single_picture):
         r = g = b = int(byte)
         x = 5*(index%28 + 20)
         y = 5*(int(index/28)%28 + 5)
-        
+
         pygame.draw.rect(screen, (r, g, b), (x, y, width, height))
 
     # Print target value for current number
@@ -33,7 +33,7 @@ def plot_stuff(single_label, single_picture):
     screen.blit(label, (400, 50))
 
     pygame.display.update()
-    time.sleep(.5)
+    time.sleep(.05)
 
     # n += 784
 
