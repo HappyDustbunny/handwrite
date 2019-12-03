@@ -21,7 +21,6 @@ class Network:
         self.c = np.zeros(self.nodes_pr_layer[-1])
         self.cost = 0
         self.cost_history = None
-        self.dCdW = None
 
         # Initialize and store layers
         for n, number_of_nodes in enumerate(self.nodes_pr_layer):
@@ -45,7 +44,9 @@ class Network:
 
     def find_A(self, n):
         longer_a = np.append(self.layers[n].a, 1)
-        self.layers[n].A = np.transpose(longer_a)
+        longer_a.shape = (1, self.layers[n].non + 1)
+        self.layers[n].A = longer_a
+        # self.layers[n].A = np.transpose(longer_a)
         # print(self.layers[n].A.shape)
 
 
@@ -61,7 +62,6 @@ class Network:
 
     def find_sigma(self, n, value):
         self.layers[n].a = 1/(1 - np.exp(-value))
-        self.find_A(n)
 
 
     def find_D(self, n):
@@ -76,9 +76,10 @@ class Network:
     #         # [0: -1, : ] All rows except the last, all collums
 
     def find_delta(self, n):
-        if n == self.number_of_layers:
-            find_c()
-            self.delta = np.matmul(self.layers[n].D, self.c)
+        if n == self.number_of_layers - 1:
+            self.find_c()
+            self.delta = self.layers[n].D * self.c
+            # self.delta = np.matmul(self.layers[n].D, self.c)
             # delta(n-1) = D(n) @ c(n)    n being number of last layer
         else:
             self.delta = np.matmul(np.matmul(self.layers[n - 1].D,
@@ -88,6 +89,7 @@ class Network:
                                    #
                                    # [0: -1, : ] All rows except the last,
                                    # all collums
+        self.layers[n].delta.shape = (self.layers[n].non, 1)
 
 
 class Layer(Network):
@@ -102,7 +104,7 @@ class Layer(Network):
         #self.sigma = np.zeros(number_of_nodes)
         self.n = layer_number
         self.non = number_of_nodes
-        # self.nol = number_of_layers
+        self.dCdW = None
 
 
 def initialize_network():
@@ -127,7 +129,7 @@ def train_network(net):
 
     # Start training
     n = 0
-    number_of_iterations = 50
+    number_of_iterations = 500
     net.cost_history = np.zeros((number_of_iterations + 1,))
     for single_label, single_picture in zip(label_data, picture_data):
         net.load_single_pic(int(single_label), single_picture)
@@ -152,10 +154,12 @@ def forward_pass(net):
         if n == 0:
             net.find_A(n)
         # elif n < net.layers[n].nol:
-        elif n < net.number_of_layers - 1:
-            A_matmul_w = np.matmul(net.layers[n-1].A, net.layers[n].weights)
+        elif n < net.number_of_layers:
+            A_matmul_w = np.matmul(net.layers[n-1].A,
+                                   net.layers[n].weights)
             # print(A_matmul_w, A_matmul_w.shape)
             net.find_sigma(n, A_matmul_w)
+            net.find_A(n)
             net.find_D(n)
             # net. find_w(n)  # Maybe just call weights[0: -1, : ] when needed?
             net.find_delta(n)
@@ -164,13 +168,22 @@ def forward_pass(net):
 
 
 def back_prop(net):
-    for n, layer in enumerate(reversed(net.layers)):
-        pass
-
+    for n, layer in enumerate(net.layers):
+        N = net.number_of_layers - 1  # N - n goes trough layers backwards, but
+                                      # the number of layers need to be adjusted
+                                      # for counting from 0
+        if N - n > 0:
+            # print('delta', net.layers[N - n].delta.shape, '\nA', net.layers[N - n - 1].A)
+            net.layers[N - n].dCdW = np.matmul(net.layers[N - n].delta,
+                                               net.layers[N - n - 1].A)
+            # print(net.layers[N - n].dCdW, net.layers[N - n].dCdW.shape)
 
 
 def update_weights(net):
-    pass
+    for n, layer in enumerate(net.layers):
+        if n > 0:
+            net.layers[n].weights -= np.transpose(net.learning_rate
+                                                  * net.layers[n].dCdW)
 
 
 def store_weights(net):
