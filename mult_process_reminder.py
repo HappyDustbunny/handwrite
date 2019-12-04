@@ -1,6 +1,5 @@
 
-
-Here's my take if you want to try using multiprocesses to process each row of numpy array,
+# Here's my take if you want to try using multiprocesses to process each row of numpy array,
 
 from multiprocessing import Pool
 import numpy as np
@@ -15,6 +14,6 @@ if __name__ == '__main__':
     pool.close()
     pool.join()
 
-pool.map take in a function and an iterable.
-I used 'map' function to create an iterator over each rows of the array.
-Maybe there's a better to create the iterable though.
+# pool.map take in a function and an iterable.
+# I used 'map' function to create an iterator over each rows of the array.
+# Maybe there's a better to create the iterable though.

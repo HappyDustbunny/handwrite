@@ -5,14 +5,16 @@ import pygame
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centers the Pygame window
 
-def plot_stuff(single_label, single_picture):
+
+def plot_stuff(single_label, single_picture, a_out):
     width, height = 10, 10  # Size of pixel when drawing numbers
-    black, yellow = (0, 0, 0), (255,255,0)
+    black, yellow = (0, 0, 0), (255, 255, 0)
 
     pygame.init()
     x, y = set_window_size()
-    screen = pygame.display.set_mode((x,y))
-    myfont = pygame.font.SysFont("monospace", 85)
+    screen = pygame.display.set_mode((x, y))
+    font_lbl = pygame.font.SysFont("monospace", 85)
+    font_a = pygame.font.SysFont("monospace", 25)
 
     # colour_data = single_picture[0: 784]
 
@@ -23,14 +25,20 @@ def plot_stuff(single_label, single_picture):
     # Plot current number
     for index, byte in enumerate(single_picture):
         r = g = b = int(byte)
-        x = 5*(index%28 + 20)
-        y = 5*(int(index/28)%28 + 5)
+        x = 5 * (index % 28 + 20)
+        y = 5 * (int(index / 28) % 28 + 20)
 
         pygame.draw.rect(screen, (r, g, b), (x, y, width, height))
 
+    # Print labels with 0, 1,..., 9 and colour them according to a_out
+    for n in range(10):
+        r = g = b = int(255 * a_out[0][n])
+        a_label = font_a.render(str(n), 1, (r, g, b))
+        screen.blit(a_label, (350, 30 * n + 20))
+
     # Print target value for current number
-    label = myfont.render(str(single_label), 1, yellow)
-    screen.blit(label, (400, 50))
+    label = font_lbl.render(str(single_label), 1, yellow)
+    screen.blit(label, (470, 130))
 
     pygame.display.update()
     time.sleep(.05)
@@ -39,22 +47,22 @@ def plot_stuff(single_label, single_picture):
 
 
 def set_window_size():
-        infostuffs = pygame.display.Info() # gets monitor info
+    infostuffs = pygame.display.Info()  # gets monitor info
 
-        monitorx, monitory = infostuffs.current_w, infostuffs.current_h # puts monitor length and height into variables
+    monitorx, monitory = infostuffs.current_w, infostuffs.current_h  # puts monitor length and height into variables
 
-        dispx, dispy = 700, 700
+    dispx, dispy = 700, 700
 
-        if dispx > monitorx: # scales screen down if too long
-            dispy /= dispx / monitorx
-            dispx = monitorx
-        if dispy > monitory: # scales screen down if too tall
-            dispx /= dispy / monitory
-            dispy = monitory
+    if dispx > monitorx:  # scales screen down if too long
+        dispy /= dispx / monitorx
+        dispx = monitorx
+    if dispy > monitory:  # scales screen down if too tall
+        dispx /= dispy / monitory
+        dispy = monitory
 
-        x, y = int(dispx), int(dispy)
+    x, y = int(dispx), int(dispy)
 
-        return x, y
+    return x, y
 
 
 def read_picture_data(filename):
@@ -77,10 +85,10 @@ def read_picture_data(filename):
     except LookupError:
         print(f'Oups, the file {filename} was not named as a MNist file')
 
-    picture_data = np.zeros((number_of_pics, 28*28))  # 28*28 = 784
+    picture_data = np.zeros((number_of_pics, 28 * 28))  # 28*28 = 784
 
     s = 0
-    for n in range(16, number_of_pics*784, 784):  # 16 header bytes being dumped
+    for n in range(16, number_of_pics * 784, 784):  # 16 header bytes being dumped
         for t, byte in enumerate(read_data[n: n + 784]):
             picture_data[s, t] = byte
         s += 1
@@ -104,7 +112,7 @@ def read_label_data(filename):
     except FileNotFoundError:
         print(f'Oups, the file {filename} was not found')
 
-    label_data = np.zeros((number_of_pics))
+    label_data = np.zeros(number_of_pics)
 
     for n in range(0, number_of_pics):
         label_data[n] = read_data[n + 8]  # 8 header bits being dumped
@@ -119,7 +127,8 @@ def main():
     # picture_data = read_picture_data('train-images.idx3-ubyte')
     label_data = read_label_data('t10k-labels.idx1-ubyte')
     picture_data = read_picture_data('t10k-images.idx3-ubyte')
-    plot_stuff(picture_data, label_data)
+    a_out = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    plot_stuff(picture_data, label_data, a_out)
 
 
 if __name__ == '__main__':
